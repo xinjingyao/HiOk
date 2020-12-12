@@ -5,12 +5,15 @@ import com.yao.net.hiokdemo.network.request.RequestCall;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * request的builder类
+ * @param <T>
+ */
 public abstract class RequestBuilder<T extends RequestBuilder> {
     protected String url;
     protected Object tag;
     protected Map<String, String> headers;
     protected Map<String, String> params;
-    protected int id;
 
     public T url(String url) {
         this.url = url;
@@ -32,6 +35,19 @@ public abstract class RequestBuilder<T extends RequestBuilder> {
             headers = new LinkedHashMap<>();
         }
         headers.put(key, value);
+        return (T) this;
+    }
+
+    public T params(Map<String, String> params) {
+        this.params = params;
+        return (T) this;
+    }
+
+    public T addParam(String key, String value) {
+        if (params == null) {
+            params = new LinkedHashMap<>();
+        }
+        params.put(key, value);
         return (T) this;
     }
 

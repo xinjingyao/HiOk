@@ -4,7 +4,6 @@ import com.yao.net.hiokdemo.network.callback.OkCallback;
 
 import java.util.Map;
 
-import okhttp3.Callback;
 import okhttp3.Headers;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -15,13 +14,12 @@ public abstract class OkHttpRequest {
     protected Object tag;
     protected Map<String, String> params;
     protected Map<String, String> headers;
-    protected int id;
-    private Request.Builder builder = new Request.Builder();
+    protected Request.Builder builder = new Request.Builder();
 
     public OkHttpRequest(String url,
                          Object tag,
                          Map<String, String> params,
-                         Map<String, String> headers,int id) {
+                         Map<String, String> headers) {
         this.url = url;
         this.tag = tag;
         this.params = params;
@@ -41,6 +39,10 @@ public abstract class OkHttpRequest {
             headersBuilder.add(key, headers.get(key));
         }
         builder.headers(headersBuilder.build());
+    }
+
+    public RequestCall build() {
+        return new RequestCall(this);
     }
 
     /**

@@ -12,7 +12,9 @@ import okhttp3.Callback;
 import okhttp3.Request;
 import okhttp3.Response;
 
-
+/**
+ * 请求的统一封装
+ */
 public class RequestCall {
 
     private OkHttpRequest okHttpRequest;

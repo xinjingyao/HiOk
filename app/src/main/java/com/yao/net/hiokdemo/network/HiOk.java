@@ -4,6 +4,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 
+import com.yao.net.hiokdemo.network.builder.GetBuilder;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -57,6 +59,10 @@ public class HiOk {
 
     public Handler getDelivery() {
         return mDelivery;
+    }
+
+    public GetBuilder get() {
+        return new GetBuilder();
     }
 
     public List<String> getTagList() {
