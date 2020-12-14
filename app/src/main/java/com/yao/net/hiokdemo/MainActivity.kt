@@ -32,5 +32,29 @@ class MainActivity : AppCompatActivity() {
 
                 }
             })
+
+        HiOk.getInstance()
+            .post()
+            .url("")
+            .addParam("name", "yao")
+            .build()
+            .execute(object : OkCallback<String>() {
+                override fun onBefore() {
+                    TODO("Not yet implemented")
+                }
+
+                override fun onSuccess(response: Any?) {
+                    TODO("Not yet implemented")
+                }
+
+                override fun onError(e: Exception?) {
+                    TODO("Not yet implemented")
+                }
+
+                override fun onAfter() {
+                    TODO("Not yet implemented")
+                }
+
+            })
     }
 }

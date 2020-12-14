@@ -5,6 +5,7 @@ import android.os.Looper;
 import android.text.TextUtils;
 
 import com.yao.net.hiokdemo.network.builder.GetBuilder;
+import com.yao.net.hiokdemo.network.builder.PostFormBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,6 +64,9 @@ public class HiOk {
 
     public GetBuilder get() {
         return new GetBuilder();
+    }
+    public PostFormBuilder post() {
+        return new PostFormBuilder();
     }
 
     public List<String> getTagList() {

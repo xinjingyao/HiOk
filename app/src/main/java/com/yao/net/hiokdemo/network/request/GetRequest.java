@@ -14,6 +14,10 @@ public class GetRequest extends OkHttpRequest {
         super(url, tag, params, headers);
     }
 
+    /**
+     * get 请求不需要RequestBody
+     * @return
+     */
     @Override
     protected RequestBody buildRequestBody() {
         return null;
