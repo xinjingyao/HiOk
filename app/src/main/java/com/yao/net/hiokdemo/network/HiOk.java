@@ -6,6 +6,7 @@ import android.text.TextUtils;
 
 import com.yao.net.hiokdemo.network.builder.GetBuilder;
 import com.yao.net.hiokdemo.network.builder.PostFormBuilder;
+import com.yao.net.hiokdemo.network.builder.PostStringBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -67,6 +68,9 @@ public class HiOk {
     }
     public PostFormBuilder post() {
         return new PostFormBuilder();
+    }
+    public PostStringBuilder postString() {
+        return new PostStringBuilder();
     }
 
     public List<String> getTagList() {

@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.yao.net.hiokdemo.network.HiOk
 import com.yao.net.hiokdemo.network.callback.OkCallback
+import com.yao.net.hiokdemo.network.request.PostStringRequest.MEDIA_TYPE_JSON
 import java.lang.Exception
 
 class MainActivity : AppCompatActivity() {
@@ -55,6 +56,29 @@ class MainActivity : AppCompatActivity() {
                     TODO("Not yet implemented")
                 }
 
+            })
+
+        HiOk.getInstance().postString()
+            .url("")
+            .content("xxx")
+            .mediaType(MEDIA_TYPE_JSON)
+            .build()
+            .execute(object : OkCallback<String>() {
+                override fun onBefore() {
+                    TODO("Not yet implemented")
+                }
+
+                override fun onSuccess(response: Any?) {
+                    TODO("Not yet implemented")
+                }
+
+                override fun onError(e: Exception?) {
+                    TODO("Not yet implemented")
+                }
+
+                override fun onAfter() {
+                    TODO("Not yet implemented")
+                }
             })
     }
 }
