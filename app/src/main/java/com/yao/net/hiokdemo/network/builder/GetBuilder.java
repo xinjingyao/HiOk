@@ -3,14 +3,14 @@ package com.yao.net.hiokdemo.network.builder;
 import android.net.Uri;
 
 import com.yao.net.hiokdemo.network.request.GetRequest;
-import com.yao.net.hiokdemo.network.request.RequestCall;
+import com.yao.net.hiokdemo.network.call.RequestCall;
 
 import java.util.Map;
 
 /**
  * get请求的参数构建
  */
-public class GetBuilder extends RequestBuilder<GetBuilder> {
+public class GetBuilder extends RequestBuilder<GetBuilder> implements IDefaultBuilder{
 
     @Override
     public RequestCall build() {

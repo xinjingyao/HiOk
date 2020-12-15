@@ -1,11 +1,11 @@
 package com.yao.net.hiokdemo.network.builder;
 
 import com.yao.net.hiokdemo.network.request.PostStringRequest;
-import com.yao.net.hiokdemo.network.request.RequestCall;
+import com.yao.net.hiokdemo.network.call.RequestCall;
 
 import okhttp3.MediaType;
 
-public class PostStringBuilder extends RequestBuilder<PostStringBuilder>{
+public class PostStringBuilder extends RequestBuilder<PostStringBuilder> implements IDefaultBuilder{
 
     private String content;
     private MediaType mediaType;

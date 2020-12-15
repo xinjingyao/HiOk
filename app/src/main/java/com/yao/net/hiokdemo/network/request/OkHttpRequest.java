@@ -1,6 +1,7 @@
 package com.yao.net.hiokdemo.network.request;
 
-import com.yao.net.hiokdemo.network.callback.OkCallback;
+import com.yao.net.hiokdemo.network.call.RequestCall;
+import com.yao.net.hiokdemo.network.callback.AbsCallback;
 
 import java.util.Map;
 
@@ -50,7 +51,7 @@ public abstract class OkHttpRequest {
      * @param callback
      * @return
      */
-    public Request generateRequest(OkCallback callback) {
+    public Request generateRequest(AbsCallback callback) {
         RequestBody requestBody = buildRequestBody();
         RequestBody wrapRequestBody = wrapRequestBody(requestBody, callback);
         return buildRequest(wrapRequestBody);
@@ -62,7 +63,7 @@ public abstract class OkHttpRequest {
      * @param callback
      * @return
      */
-    protected RequestBody wrapRequestBody(RequestBody requestBody, OkCallback callback) {
+    protected RequestBody wrapRequestBody(RequestBody requestBody, AbsCallback callback) {
 
         return requestBody;
     }

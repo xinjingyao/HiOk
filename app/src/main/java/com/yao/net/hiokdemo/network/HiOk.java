@@ -4,6 +4,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 
+import com.yao.net.hiokdemo.network.builder.DownloadBuilder;
 import com.yao.net.hiokdemo.network.builder.GetBuilder;
 import com.yao.net.hiokdemo.network.builder.PostFormBuilder;
 import com.yao.net.hiokdemo.network.builder.PostStringBuilder;
@@ -15,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 import okhttp3.Call;
 import okhttp3.Dispatcher;
 import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
 
 public class HiOk {
 
@@ -29,6 +31,8 @@ public class HiOk {
     private HiOk() {
         mDelivery = new Handler(Looper.getMainLooper());
         tagList = new ArrayList<>();
+        HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor();
+        httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
         okHttpClient = new OkHttpClient.Builder()
                 // 暂时不需要设置缓存和证书
                 //设置缓存文件路径，和文件大小
@@ -39,6 +43,7 @@ public class HiOk {
 //                        return true;
 //                    }
 //                })
+                .addInterceptor(httpLoggingInterceptor)
                 .connectTimeout(10, TimeUnit.SECONDS)
                 .readTimeout(10, TimeUnit.SECONDS)
                 .writeTimeout(10, TimeUnit.SECONDS)
@@ -71,6 +76,9 @@ public class HiOk {
     }
     public PostStringBuilder postString() {
         return new PostStringBuilder();
+    }
+    public DownloadBuilder download() {
+        return new DownloadBuilder();
     }
 
     public List<String> getTagList() {

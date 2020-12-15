@@ -1,7 +1,5 @@
 package com.yao.net.hiokdemo.network.builder;
 
-import com.yao.net.hiokdemo.network.request.RequestCall;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -50,6 +48,4 @@ public abstract class RequestBuilder<T extends RequestBuilder> {
         params.put(key, value);
         return (T) this;
     }
-
-    public abstract RequestCall build();
 }
