@@ -8,14 +8,18 @@ import com.yao.net.hiokdemo.network.builder.DownloadBuilder;
 import com.yao.net.hiokdemo.network.builder.GetBuilder;
 import com.yao.net.hiokdemo.network.builder.PostFormBuilder;
 import com.yao.net.hiokdemo.network.builder.PostStringBuilder;
+import com.yao.net.hiokdemo.network.log.HttpLogger;
+import com.yao.net.hiokdemo.network.log.LoggerInterceptor;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
 import okhttp3.Dispatcher;
 import okhttp3.OkHttpClient;
+import okhttp3.Protocol;
 import okhttp3.logging.HttpLoggingInterceptor;
 
 public class HiOk {
@@ -31,8 +35,7 @@ public class HiOk {
     private HiOk() {
         mDelivery = new Handler(Looper.getMainLooper());
         tagList = new ArrayList<>();
-        HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor();
-        httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+        if (okHttpClient == null)
         okHttpClient = new OkHttpClient.Builder()
                 // 暂时不需要设置缓存和证书
                 //设置缓存文件路径，和文件大小
@@ -43,10 +46,12 @@ public class HiOk {
 //                        return true;
 //                    }
 //                })
-                .addInterceptor(httpLoggingInterceptor)
                 .connectTimeout(10, TimeUnit.SECONDS)
                 .readTimeout(10, TimeUnit.SECONDS)
                 .writeTimeout(10, TimeUnit.SECONDS)
+                .addInterceptor(new HttpLoggingInterceptor(new HttpLogger()).setLevel(HttpLoggingInterceptor.Level.BODY))
+                .retryOnConnectionFailure(true)            //是否自动重连
+                .protocols(Collections.singletonList(Protocol.HTTP_1_1))
                 .build();
     }
     public static HiOk getInstance() {

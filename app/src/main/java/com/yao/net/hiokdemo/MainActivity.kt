@@ -2,6 +2,7 @@ package com.yao.net.hiokdemo
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Environment
 import com.yao.net.hiokdemo.network.HiOk
 import com.yao.net.hiokdemo.network.callback.AbsCallback
 import com.yao.net.hiokdemo.network.callback.GenericCallback
@@ -22,11 +23,11 @@ class MainActivity : AppCompatActivity() {
 //            .build()
 //            .execute(object: StringCallback() {
 //                override fun onSuccess(response: String?) {
-//
+//                    println("onSuccess==$response")
 //                }
 //
 //                override fun onError(e: Exception?) {
-//
+//                    println("onError::$e")
 //                }
 //            })
 
@@ -80,7 +81,7 @@ class MainActivity : AppCompatActivity() {
         HiOk.getInstance().download()
             .url("http://fzdldownload.zlongame.com/FZDL/Clientdown/pd_fzdl_moblie.apk")
             .tag("download")
-            .filePath(this.filesDir.absolutePath)
+            .filePath(Environment.getExternalStorageDirectory().getAbsolutePath() + "/aaaa")
             .fileName("123.apk")
             .resume(true)
             .build()
