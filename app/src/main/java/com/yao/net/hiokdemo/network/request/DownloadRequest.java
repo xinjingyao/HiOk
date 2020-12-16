@@ -2,6 +2,7 @@ package com.yao.net.hiokdemo.network.request;
 
 import android.util.Log;
 
+import com.yao.net.hiokdemo.R;
 import com.yao.net.hiokdemo.network.HiOk;
 import com.yao.net.hiokdemo.network.call.RequestCall;
 import com.yao.net.hiokdemo.network.callback.IDownloadCallback;
@@ -26,6 +27,8 @@ import okhttp3.logging.HttpLoggingInterceptor;
 
 public class DownloadRequest {
 
+    private static final String TAG = "hi-ok-download";
+
     private String url;
     private Object tag;
     private String filePath;
@@ -35,6 +38,10 @@ public class DownloadRequest {
     protected Request.Builder builder = new Request.Builder();
     private long currentLength;
     private OkHttpClient client;
+    private Call call;
+
+    private boolean isCancel;
+    private boolean isPause;
 
     public DownloadRequest(String url, Object tag, String filePath, String fileName, boolean resume) {
         this.url = url;
@@ -48,7 +55,7 @@ public class DownloadRequest {
         }
     }
 
-    public void execute(final IDownloadCallback callback) {
+    public DownloadRequest execute(final IDownloadCallback callback) {
         if (resume) {
             File file = new File(filePath, fileName);
             if (file.exists()) {
@@ -57,19 +64,20 @@ public class DownloadRequest {
             }
         }
         // 开始
-        callback.start();
+        sendStart(callback);
         Request request = builder.get().build();
-        getOkHttpClient().newCall(request).enqueue(new Callback() {
+        call = getOkHttpClient().newCall(request);
+        call.enqueue(new Callback() {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                callback.error(e);
+                sendError(e, callback);
             }
 
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                 FileOutputStream fos = null;
                 InputStream is = null;
-                long sum = 0; // 下载总大小
+                long sum; // 下载总大小
                 long total = 0; // 文件总大小
                 int len = 0; // 每次读取的长度
                 byte[] buff = new byte[1024];
@@ -92,21 +100,30 @@ public class DownloadRequest {
                         total = response.body().contentLength();
                     }
                     while ((len = is.read(buff)) != -1) {
-                        fos.write(buff, 0, len);
-                        sum += len;
-                        // 进度
-                        int progress = (int) (sum * 1.0f / total * 100);
-                        callback.inProgress(total, progress);
+                        if (isCancel) {
+                            Log.d(TAG, "==canceled");
+                            call.cancel();
+                            sendCancel(callback);
+                        } else if (isPause) {
+                            Log.d(TAG, "==paused");
+                            sendPause(callback);
+                        } else {
+                            fos.write(buff, 0, len);
+                            sum += len;
+                            // 进度
+                            int progress = (int) (sum * 1.0f / total * 100);
+                            sendProgress(total, progress, callback);
+                        }
                     }
                     // 写完刷新下
                     fos.flush();
-                    callback.complete(file);
+                    sendComplete(file, callback);
                 } catch (IOException e) {
-                    Log.d("IOException", e.getMessage());
-                    callback.error(e);
+                    Log.e("IOException", e.getMessage());
+                    sendError(e, callback);
                 } catch (Exception e) {
-                    Log.d("Exception", e.getMessage());
-                    callback.error(e);
+                    Log.e("Exception", e.getMessage());
+                    sendError(e, callback);
                 } finally {
                     try {
                         if (is != null) {
@@ -116,14 +133,92 @@ public class DownloadRequest {
                             fos.close();
                         }
                     } catch (Exception e) {
-                        Log.d("Exception", e.getMessage());
-                        callback.error(e);
+                        Log.e("Exception", e.getMessage());
+                        sendError(e, callback);
                     }
 
                 }
 
             }
         });
+        return this;
+    }
+
+    private void sendComplete(final File file, final IDownloadCallback callback) {
+        HiOk.getInstance().getDelivery().execute(new Runnable() {
+            @Override
+            public void run() {
+                if (callback != null) {
+                    callback.complete(file);
+                }
+            }
+        });
+    }
+
+    private void sendStart(final IDownloadCallback callback) {
+        HiOk.getInstance().getDelivery().execute(new Runnable() {
+            @Override
+            public void run() {
+                if (callback != null) {
+                    callback.start();
+                }
+            }
+        });
+    }
+
+    private void sendError(final Exception e, final IDownloadCallback callback) {
+        HiOk.getInstance().getDelivery().execute(new Runnable() {
+            @Override
+            public void run() {
+                if (callback != null) {
+                    callback.error(e);
+                }
+            }
+        });
+    }
+
+    private void sendProgress(final long total, final int progress, final IDownloadCallback callback) {
+        HiOk.getInstance().getDelivery().execute(new Runnable() {
+            @Override
+            public void run() {
+                if (callback != null) {
+                    callback.inProgress(total, progress);
+                }
+            }
+        });
+    }
+
+    private void sendPause(final IDownloadCallback callback) {
+        HiOk.getInstance().getDelivery().execute(new Runnable() {
+            @Override
+            public void run() {
+                if (callback != null) {
+                    callback.pause();
+                }
+            }
+        });
+    }
+    private void sendCancel(final IDownloadCallback callback) {
+        HiOk.getInstance().getDelivery().execute(new Runnable() {
+            @Override
+            public void run() {
+                if (callback != null) {
+                    callback.cancel();
+                }
+            }
+        });
+    }
+
+    public void cancelDownload() {
+        isCancel = true;
+    }
+
+    public void pauseDownload() {
+        isPause = true;
+    }
+
+    public void continueDownload() {
+        isPause = false;
     }
 
     private OkHttpClient getOkHttpClient() {

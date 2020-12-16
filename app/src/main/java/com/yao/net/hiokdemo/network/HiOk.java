@@ -1,7 +1,5 @@
 package com.yao.net.hiokdemo.network;
 
-import android.os.Handler;
-import android.os.Looper;
 import android.text.TextUtils;
 
 import com.yao.net.hiokdemo.network.builder.DownloadBuilder;
@@ -9,11 +7,12 @@ import com.yao.net.hiokdemo.network.builder.GetBuilder;
 import com.yao.net.hiokdemo.network.builder.PostFormBuilder;
 import com.yao.net.hiokdemo.network.builder.PostStringBuilder;
 import com.yao.net.hiokdemo.network.log.HttpLogger;
-import com.yao.net.hiokdemo.network.log.LoggerInterceptor;
+import com.yao.net.hiokdemo.network.util.Platform;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
@@ -28,12 +27,12 @@ public class HiOk {
 
     private OkHttpClient okHttpClient;
     //这个handler的作用是把子线程切换主线程。
-    private Handler mDelivery;
+    private Platform mPlatform;
     //防止网络重复请求的tagList;
     private List<String> tagList;
 
     private HiOk() {
-        mDelivery = new Handler(Looper.getMainLooper());
+        mPlatform = Platform.get();
         tagList = new ArrayList<>();
         if (okHttpClient == null)
         okHttpClient = new OkHttpClient.Builder()
@@ -69,8 +68,8 @@ public class HiOk {
         return okHttpClient;
     }
 
-    public Handler getDelivery() {
-        return mDelivery;
+    public Executor getDelivery() {
+        return mPlatform.defaultCallbackExecutor();
     }
 
     public GetBuilder get() {

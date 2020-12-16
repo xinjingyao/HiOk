@@ -68,7 +68,7 @@ public class RequestCall {
      */
     private void handleSuccess(final Object o, final AbsCallback callback) {
         if (callback == null) return;
-        HiOk.getInstance().getDelivery().post(new Runnable() {
+        HiOk.getInstance().getDelivery().execute(new Runnable() {
             @Override
             public void run() {
                 callback.onSuccess(o);
@@ -85,7 +85,7 @@ public class RequestCall {
      */
     private void handleFailure(final Exception e, final AbsCallback callback) {
         if (callback == null) return;
-        HiOk.getInstance().getDelivery().post(new Runnable() {
+        HiOk.getInstance().getDelivery().execute(new Runnable() {
             @Override
             public void run() {
                 callback.onError(e);
