@@ -26,69 +26,83 @@ class MainActivity : AppCompatActivity() {
         btn_pause.setOnClickListener { pauseDownload() }
         btn_continue.setOnClickListener { continueDownload() }
         btn_cancel.setOnClickListener { cancelDownload() }
-//        HiOk.getInstance()
-//            .get()
-//            .url("http://microgame-test.haimawan.com/microCloud/game/into")
-//            .params(null)
-//            .build()
-//            .execute(object: StringCallback() {
-//                override fun onSuccess(response: String?) {
-//                    println("onSuccess==$response")
-//                }
-//
-//                override fun onError(e: Exception?) {
-//                    println("onError::$e")
-//                }
-//            })
+        btn_get.setOnClickListener { requestGet() }
+        btn_post.setOnClickListener { requestPost() }
+        btn_post_string.setOnClickListener { requestPostString() }
 
-//        HiOk.getInstance()
-//            .post()
-//            .url("http://microgame-test.haimawan.com/microCloud/game/into")
-//            .addParam("name", "yao")
-//            .build()
-//            .execute(object : GenericCallback<String>() {
-//                override fun onBefore() {
-//                    println("onBefore")
-//                }
-//
-//                override fun onError(e: Exception?) {
-//                    println("onError::$e")
-//                }
-//
-//                override fun onAfter() {
-//                    println("onAfter")
-//                }
-//
-//                override fun onSuccess(response: String?) {
-//                    println("onSuccess==$response")
-//                }
-//
-//            })
-//
-//        HiOk.getInstance().postString()
-//            .url("http://microgame-test.haimawan.com/microCloud/game/into/microCloud/loginForSdk")
-//            .content("dfdfdf")
-//            .mediaType(MEDIA_TYPE_JSON)
-//            .build()
-//            .execute(object : StringCallback() {
-//                override fun onBefore() {
-//                    println("onBefore")
-//                }
-//
-//                override fun onError(e: Exception?) {
-//                    println("onError::$e")
-//                }
-//
-//                override fun onAfter() {
-//                    println("onAfter")
-//                }
-//
-//                override fun onSuccess(response: String?) {
-//                    println("onSuccess==$response")
-//                }
-//            })
+    }
 
+    private fun requestPostString() {
+        HiOk.getInstance().postString()
+            .url("http://microgame-test.haimawan.com/microCloud/game/into/microCloud/loginForSdk")
+            .addHeader("authInfo", "De6ClA1hCGCacrlwyvmpAP9rr0Mfn5u73v4yRIJ9/kGmbrGjhhNouHmH0Sq8xv2l7A6KQAK9kuFhOw7DXz6bPidPJuDZ6NxwftoGy1ts8B+bLvntndkd2z7u5pcUpLcbIKQqcXS3zss7+zYNjHEa395iMnxk65SZ46YDAvQ3H6ZaGXfvgfdV1BmYx3qdqZHXqtaGy9UW1OM+dt/0EzFiivcwsfD+6rmLd1hy/O9qgn8=")
+            .content("NWSkixg2SeWGxiZ95aVydxw1+wPYs90LGO2Agw6BLUGxzpUwDQgBBcmhhsP1+nFifHHwcgwX5bWaciC8WbFDteB9nBkLGA29R03f+sm5eLicnMhNugYcAacUc3+mU8lVq2+E/bppR26I66s/CLD4j7SQAHunhP16XRJIsziNV/g=")
+            .mediaType(MEDIA_TYPE_JSON)
+            .build()
+            .execute(object : StringCallback() {
+                override fun onBefore() {
+                    println("onBefore")
+                }
 
+                override fun onError(e: Exception?) {
+                    println("onError::$e")
+                }
+
+                override fun onAfter() {
+                    println("onAfter")
+                }
+
+                override fun onSuccess(response: String?) {
+                    println("onSuccess==$response")
+                }
+            })
+    }
+
+    private fun requestPost() {
+        HiOk.getInstance()
+            .post()
+            .url("http://microgame-test.haimawan.com/microCloud/game/into")
+            .addParam("name", "yao")
+            .build()
+            .execute(object : GenericCallback<String>() {
+                override fun onBefore() {
+                    println("onBefore")
+                }
+
+                override fun onError(e: Exception?) {
+                    println("onError::$e")
+                    tv_response.text = "onError= $e"
+                }
+
+                override fun onAfter() {
+                    println("onAfter")
+                }
+
+                override fun onSuccess(response: String?) {
+                    println("onSuccess==$response")
+                    tv_response.text = "onSuccess= $response"
+                }
+
+            })
+    }
+
+    private fun requestGet() {
+        HiOk.getInstance()
+            .get()
+            .url("http://microgame-test.haimawan.com/microCloud/game/into")
+            .params(null)
+            .build()
+            .execute(object: StringCallback() {
+                override fun onSuccess(response: String?) {
+                    println("onSuccess==$response")
+                    tv_response.text = "onSuccess= $response"
+                }
+
+                override fun onError(e: Exception?) {
+                    println("onError::$e")
+                    tv_response.text = "onError= $e"
+                }
+            })
     }
 
     private fun continueDownload() {

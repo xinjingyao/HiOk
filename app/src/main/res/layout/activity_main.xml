@@ -38,5 +38,33 @@
         android:id="@+id/tv_download_info"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="demo" />
+        android:text="下载信息" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btn_get"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="get请求" />
+        <Button
+            android:id="@+id/btn_post"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="post请求" />
+        <Button
+            android:id="@+id/btn_post_string"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="postString" />
+
+    </LinearLayout>
+    <TextView
+        android:id="@+id/tv_response"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="响应信息" />
 </LinearLayout>
