@@ -126,7 +126,8 @@ public class DownloadRequest {
                     while (true) {
                         if (isCancel) { // 取消
                             call.cancel();
-//                            sendCancel(callback);
+                            sendCancel(callback);
+                            return;
                         } else if (isPause) { // 暂停
 //                            sendPause(callback);
                         } else { // 读写
@@ -259,23 +260,35 @@ public class DownloadRequest {
         });
     }
 
+    /**
+     * 取消下载
+     */
     public void cancelDownload() {
         Log.d(TAG, "==cancelDownload");
         isCancel = true;
-        sendCancel(callback);
     }
 
+    /**
+     * 暂停下载
+     */
     public void pauseDownload() {
         Log.d(TAG, "==pauseDownload");
         isPause = true;
         sendPause(callback);
     }
 
+    /**
+     * 继续下载
+     */
     public void continueDownload() {
         Log.d(TAG, "==continueDownload");
         isPause = false;
     }
 
+    /**
+     * 设置限速
+     * @param speed 最高速度 单位Kb/s
+     */
     public void setSpeed(long speed) {
         this.speed = speed;
     }
