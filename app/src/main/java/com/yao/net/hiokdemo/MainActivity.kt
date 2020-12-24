@@ -4,7 +4,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
 import com.yao.net.hiokdemo.network.HiOk
-import com.yao.net.hiokdemo.network.callback.AbsCallback
 import com.yao.net.hiokdemo.network.callback.GenericCallback
 import com.yao.net.hiokdemo.network.callback.IDownloadCallback
 import com.yao.net.hiokdemo.network.callback.StringCallback
@@ -119,20 +118,25 @@ class MainActivity : AppCompatActivity() {
 
     private fun startDownload() {
         manager = HiOk.getInstance().download()
-            .url("http://fzdldownload.zlongame.com/FZDL/Clientdown/pd_fzdl_moblie.apk")
+            .url("http://dl.haimawan.com/JYSAndroid/3.1.9/JYS_weiduan_3.1.9.apk")
             .tag("download")
             .filePath(Environment.getExternalStorageDirectory().getAbsolutePath() + "/aaaa")
             .fileName("123.apk")
             .resume(true)
+            .limitSpeed(500*1024)
             .build()
             .execute(object : IDownloadCallback {
                 override fun start() {
 
                 }
 
-                override fun inProgress(total: Long, progress: Int) {
-                    println("inProgress==total$total===progress$progress")
-                    tv_download_info.text = "total=$total, progress=$progress %"
+                override fun inProgress(
+                    total: Long,
+                    progress: Int,
+                    perSpeed: Long
+                ) {
+//                    println("inProgress==total$total===progress$progress")
+                    tv_download_info.text = "total=$total, progress=$progress %, perSpeed=${perSpeed / 1000} kb/s"
                 }
 
                 override fun pause() {
@@ -144,7 +148,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 override fun complete(file: File?) {
-
+                    println("complete==")
                 }
 
                 override fun error(e: Exception?) {

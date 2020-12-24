@@ -2,9 +2,7 @@ package com.yao.net.hiokdemo.network.request;
 
 import android.util.Log;
 
-import com.yao.net.hiokdemo.R;
 import com.yao.net.hiokdemo.network.HiOk;
-import com.yao.net.hiokdemo.network.call.RequestCall;
 import com.yao.net.hiokdemo.network.callback.IDownloadCallback;
 import com.yao.net.hiokdemo.network.log.HttpLogger;
 
@@ -34,6 +32,7 @@ public class DownloadRequest {
     private String filePath;
     private String fileName;
     private boolean resume;
+    private long speed;
 
     protected Request.Builder builder = new Request.Builder();
     private long currentLength;
@@ -42,13 +41,15 @@ public class DownloadRequest {
 
     private boolean isCancel;
     private boolean isPause;
+    private IDownloadCallback callback;
 
-    public DownloadRequest(String url, Object tag, String filePath, String fileName, boolean resume) {
+    public DownloadRequest(String url, Object tag, String filePath, String fileName, boolean resume, long limitSpeed) {
         this.url = url;
         this.tag = tag;
         this.fileName = fileName;
         this.filePath = filePath;
         this.resume = resume;
+        this.speed = limitSpeed;
         builder.url(url);
         if (tag != null) {
             builder.tag(tag);
@@ -56,12 +57,22 @@ public class DownloadRequest {
     }
 
     public DownloadRequest execute(final IDownloadCallback callback) {
+        this.callback = callback;
+        File file = new File(filePath, fileName);
         if (resume) {
-            File file = new File(filePath, fileName);
             if (file.exists()) {
                 currentLength = file.length();
                 builder.header("RANGE", "bytes=" + currentLength + "-");
             }
+        } else {
+            if (file.exists()) {
+                file.delete();
+                Log.d(TAG, "==file delete");
+            }
+        }
+        if (call != null && call.isExecuted()) {
+            Log.d(TAG, "==is executing");
+            return this;
         }
         // 开始
         sendStart(callback);
@@ -74,13 +85,14 @@ public class DownloadRequest {
             }
 
             @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+            public void onResponse(@NotNull Call call, @NotNull Response response) {
                 FileOutputStream fos = null;
                 InputStream is = null;
                 long sum; // 下载总大小
-                long total = 0; // 文件总大小
-                int len = 0; // 每次读取的长度
-                byte[] buff = new byte[1024];
+                long total; // 文件总大小
+                int readLen; // 每次读取的长度
+                byte[] buff = new byte[1024]; // 设置一个buffer
+                long perStartTime = System.currentTimeMillis();
 
                 try {
                     File dir = new File(filePath);
@@ -89,40 +101,77 @@ public class DownloadRequest {
                     }
                     File file = new File(filePath, fileName);
 
-                    is = response.body().byteStream();
+                    // 判断是否下载完成
+                    if (currentLength >= getContentLength(url)) {
+                        Log.d(TAG, "--下载已完成");
+                        sendComplete(file, callback);
+                        return;
+                    }
+                    // 计算已下载的总大小
+                    long bodyLength = response.body().contentLength();
+                    Log.d(TAG, "bodyLength=" + bodyLength);
                     if (resume) {
                         fos = new FileOutputStream(file, true);
                         sum = currentLength;
-                        total = response.body().contentLength() + currentLength;
+                        total = bodyLength + currentLength;
                     } else {
                         fos = new FileOutputStream(file);
                         sum = 0;
-                        total = response.body().contentLength();
+                        total = bodyLength;
                     }
-                    while ((len = is.read(buff)) != -1) {
-                        if (isCancel) {
-                            Log.d(TAG, "==canceled");
+
+                    is = response.body().byteStream();
+                    long startReadPer = sum;
+                    // 边读边写
+                    while (true) {
+                        if (isCancel) { // 取消
                             call.cancel();
-                            sendCancel(callback);
-                        } else if (isPause) {
-                            Log.d(TAG, "==paused");
-                            sendPause(callback);
-                        } else {
-                            fos.write(buff, 0, len);
-                            sum += len;
-                            // 进度
-                            int progress = (int) (sum * 1.0f / total * 100);
-                            sendProgress(total, progress, callback);
+//                            sendCancel(callback);
+                        } else if (isPause) { // 暂停
+//                            sendPause(callback);
+                        } else { // 读写
+                            long startReadTime = System.nanoTime();
+                            readLen = is.read(buff);
+                            // 由于计算读写时间，while()里面不再读取，这里要判断下是否读取完成
+                            if (readLen == -1) {
+                                Log.d(TAG, "下载完成");
+                                break;
+                            }
+                            fos.write(buff, 0, readLen);
+                            sum += readLen;
+                            long endWriteTime = System.nanoTime();
+
+                            // speed > 0 说明设置了限制速度
+                            if (speed > 0) {
+                                // 当前时间段内的期望时间 - 真实时间
+                                long sleepDuration = (long) ((readLen * 1000.0 / speed) - ((startReadTime - endWriteTime) / 1000_000.0));
+
+                                if (sleepDuration > 0) {
+                                    Thread.sleep(sleepDuration);
+                                }
+                            }
+                            // 计算瞬时速度
+                            long timeDuration = System.currentTimeMillis() - perStartTime;
+                            if (timeDuration >= 1000) {
+                                long perSpeed = (long) ((sum - startReadPer) / timeDuration * 1000.0);
+                                startReadPer = sum;
+                                perStartTime = System.currentTimeMillis();
+                                // 进度
+                                int progress = (int) (sum * 1.0f / total * 100);
+                                Log.d(TAG, "--total=" + total + ", progress=" + progress + ", perSpeed=" + perSpeed);
+                                sendProgress(total, progress, perSpeed, callback);
+                            }
+
                         }
                     }
                     // 写完刷新下
                     fos.flush();
                     sendComplete(file, callback);
                 } catch (IOException e) {
-                    Log.e("IOException", e.getMessage());
+                    Log.e("IOException", e.toString());
                     sendError(e, callback);
                 } catch (Exception e) {
-                    Log.e("Exception", e.getMessage());
+                    Log.e("Exception", e.toString());
                     sendError(e, callback);
                 } finally {
                     try {
@@ -133,7 +182,7 @@ public class DownloadRequest {
                             fos.close();
                         }
                     } catch (Exception e) {
-                        Log.e("Exception", e.getMessage());
+                        Log.e("Exception", e.toString());
                         sendError(e, callback);
                     }
 
@@ -177,12 +226,12 @@ public class DownloadRequest {
         });
     }
 
-    private void sendProgress(final long total, final int progress, final IDownloadCallback callback) {
+    private void sendProgress(final long total, final int progress, final long perSpeed, final IDownloadCallback callback) {
         HiOk.getInstance().getDelivery().execute(new Runnable() {
             @Override
             public void run() {
                 if (callback != null) {
-                    callback.inProgress(total, progress);
+                    callback.inProgress(total, progress, perSpeed);
                 }
             }
         });
@@ -198,6 +247,7 @@ public class DownloadRequest {
             }
         });
     }
+
     private void sendCancel(final IDownloadCallback callback) {
         HiOk.getInstance().getDelivery().execute(new Runnable() {
             @Override
@@ -210,16 +260,48 @@ public class DownloadRequest {
     }
 
     public void cancelDownload() {
+        Log.d(TAG, "==cancelDownload");
         isCancel = true;
+        sendCancel(callback);
     }
 
     public void pauseDownload() {
+        Log.d(TAG, "==pauseDownload");
         isPause = true;
+        sendPause(callback);
     }
 
     public void continueDownload() {
+        Log.d(TAG, "==continueDownload");
         isPause = false;
     }
+
+    public void setSpeed(long speed) {
+        this.speed = speed;
+    }
+
+    /**
+     * 得到下载内容的大小
+     * @param downloadUrl 下载地址
+     * @return
+     */
+    private long getContentLength(String downloadUrl) {
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder().url(downloadUrl).build();
+        try {
+            Response response = client.newCall(request).execute();
+            if (response != null && response.isSuccessful()) {
+                long contentLength = response.body().contentLength();
+                response.body().close();
+                Log.d(TAG, "contentLength==" + contentLength);
+                return contentLength;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
 
     private OkHttpClient getOkHttpClient() {
         if (client == null) {

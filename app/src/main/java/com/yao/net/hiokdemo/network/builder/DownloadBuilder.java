@@ -7,10 +7,11 @@ public class DownloadBuilder extends RequestBuilder<DownloadBuilder> implements 
     protected String filePath;
     protected String fileName;
     protected boolean resume;
+    private long limitSpeed;
 
     @Override
     public DownloadRequest build() {
-        return new DownloadRequest(url, tag, filePath, fileName, resume);
+        return new DownloadRequest(url, tag, filePath, fileName, resume, limitSpeed);
     }
 
     public DownloadBuilder filePath(String filePath) {
@@ -25,6 +26,11 @@ public class DownloadBuilder extends RequestBuilder<DownloadBuilder> implements 
 
     public DownloadBuilder resume(boolean resume) {
         this.resume = resume;
+        return this;
+    }
+
+    public DownloadBuilder limitSpeed(long limitSpeed) {
+        this.limitSpeed = limitSpeed;
         return this;
     }
 }
